@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.8'
+        }
+    }
 
     stages {
         stage('Checkout') {
@@ -10,9 +14,6 @@ pipeline {
 
         stage('Setup Python') {
             steps {
-                sh 'sudo apt-get install python3.10'
-                sh 'python3 -m venv venv'
-                sh 'source venv/bin/activate'
                 sh 'pip install -r requirements.txt'
             }
         }
@@ -24,3 +25,4 @@ pipeline {
         }
     }
 }
+
