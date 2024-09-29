@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     stages {
         stage('Checkout') {
@@ -8,21 +13,18 @@ pipeline {
             }
         }
 
-        stage('Setup Python') {
+        stage('Setup Python and Run Tests') {
             steps {
-                sh 'apt-get update'
-                sh 'apt-get install python3.8'
-                sh 'apt-get install python3-pip'
-                sh 'python3 -m venv env'
-                sh 'source env/bin/activate'
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'source env/bin/activate'
-                sh 'python -m unittest test_math_operations.py'
+                script {
+                    // Run a Python 3.10 container to install dependencies and run tests
+                    sh '''
+                    docker run --rm -v $PWD:/app -w /app python:3.10 /bin/bash -c "
+                        pip install --upgrade pip &&
+                        pip install -r requirements.txt &&
+                        python -m unittest test_math_operations.py
+                    "
+                    '''
+                }
             }
         }
     }
