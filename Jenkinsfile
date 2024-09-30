@@ -1,8 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            image 'python:3.9-slim'
         }
     }
 
@@ -13,19 +12,17 @@ pipeline {
             }
         }
 
-        stage('Setup Python and Run Tests') {
+        stage('Setup Python') {
             steps {
-                script {
-                    // Run a Python 3.10 container to install dependencies and run tests
                     sh '''
-                    docker run --rm -v $PWD:/app -w /app python:3.10 /bin/bash -c "
-                        pip install --upgrade pip &&
-                        pip install -r requirements.txt &&
-                        python -m unittest test_math_operations.py
-                    "
+                        pip install -r requirements.txt 
                     '''
-                }
             }
         }
+	stage('Run Tests') {
+	    steps {
+		sh 'python -m unittest discover -v'
+		}
+	}
     }
 }
