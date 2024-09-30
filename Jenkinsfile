@@ -1,28 +1,26 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.9'
-        }
-    }
-
+    agent any
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/IrinaShekhovtsova/SSSTSlab4.git', branch: 'main', credentialsId: 'SSSTSGitCred'
+                git url: 'https://github.com/IrinaShekhovtsova/SSSTSlab4.git', branch: 'main',credentialId: 'SSSTSGitCred'
             }
         }
-
-        stage('Setup Python') {
+        stage('Build and Test') {
+            agent {
+                docker {
+                    image 'python:3.9-slim'
+                }
+            }
             steps {
-                    sh '''
-                        pip install -r requirements.txt 
-                    '''
+                sh '''
+                    if [ -f requirements.txt ]; then
+                        pip install --no-cache-dir -r requirements.txt
+                    fi
+                    python -m unittest discover -v
+                '''
             }
         }
-	stage('Run Tests') {
-	    steps {
-		sh 'python -m unittest discover -v'
-		}
-	}
     }
 }
+
